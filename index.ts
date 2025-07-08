@@ -16,6 +16,15 @@ const server = http.createServer((req, res) => {
     if (req.url === '/' || req.url === '/health') {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ status: 'ok', timestamp: new Date().toISOString() }));
+    } else if (req.url === '/qr' && req.method === 'GET') {
+        if (fs.existsSync('qr_code.png')) {
+            const qrImage = fs.readFileSync('qr_code.png');
+            res.writeHead(200, { 'Content-Type': 'image/png' });
+            res.end(qrImage);
+        } else {
+            res.writeHead(404, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'QR code not available. Bot may already be connected.' }));
+        }
     } else {
         res.writeHead(404);
         res.end('Not Found');
@@ -47,11 +56,12 @@ const startBot = async () => {
 
         if (qr) {
             console.log('Generating QR code...');
+            await QRCode.toFile('qr_code.png', qr);
             if (isProduction) {
+                console.log('QR Code generated. Access it at: /qr endpoint');
                 console.log('QR Code for WhatsApp Web:');
                 console.log(qr);
             } else {
-                await QRCode.toFile('qr_code.png', qr);
                 console.log('QR code saved as qr_code.png. Open the file to scan it.');
             }
         }
@@ -96,8 +106,6 @@ const startBot = async () => {
         }
     });
 };
-
-startBot().catch((err) => console.error('Error starting bot:', err));
 
 startBot().catch((err) => console.error('Error starting bot:', err));
 
