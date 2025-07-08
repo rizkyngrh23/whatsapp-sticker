@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.env
+*.log
+qr_code.png
+.DS_Store
+Thumbs.db
+auth_info_baileys/
+.railway/
+.vercel/
+.render/

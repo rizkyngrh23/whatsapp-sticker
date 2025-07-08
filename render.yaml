@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: whatsapp-sticker-bot
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: AUTH_INFO_PATH
+        value: /opt/render/project/src/auth_info_baileys
