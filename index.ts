@@ -8,8 +8,13 @@ import QRCode from 'qrcode';
 
 const authDirPath = process.env.AUTH_INFO_PATH || path.join(__dirname, 'auth_info_baileys');
 const isProduction = process.env.NODE_ENV === 'production';
-const PORT = process.env.PORT || 3000;
+const PORT = parseInt(process.env.PORT || '3000');
+const HOST = process.env.HOST || '0.0.0.0';
 
+console.log('=== WhatsApp Sticker Bot Starting ===');
+console.log('Environment:', process.env.NODE_ENV);
+console.log('Port:', PORT);
+console.log('Host:', HOST);
 console.log('Auth state path:', authDirPath);
 
 const server = http.createServer((req, res) => {
@@ -31,8 +36,8 @@ const server = http.createServer((req, res) => {
     }
 });
 
-server.listen(PORT, () => {
-    console.log(`Health check server running on port ${PORT}`);
+server.listen(PORT, HOST, () => {
+    console.log(`Health check server running on ${HOST}:${PORT}`);
 });
 
 const startBot = async () => {
@@ -107,5 +112,25 @@ const startBot = async () => {
     });
 };
 
-startBot().catch((err) => console.error('Error starting bot:', err));
+// Handle graceful shutdown
+process.on('SIGTERM', () => {
+    console.log('SIGTERM received, shutting down gracefully');
+    server.close(() => {
+        console.log('HTTP server closed');
+        process.exit(0);
+    });
+});
+
+process.on('SIGINT', () => {
+    console.log('SIGINT received, shutting down gracefully');
+    server.close(() => {
+        console.log('HTTP server closed');
+        process.exit(0);
+    });
+});
+
+startBot().catch((err) => {
+    console.error('Error starting bot:', err);
+    process.exit(1);
+});
 
